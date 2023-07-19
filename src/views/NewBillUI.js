@@ -1,5 +1,6 @@
 import VerticalLayout from "./VerticalLayout.js";
 
+// Added the accepted file type on the file input line 57/58
 export default () => {
 	return `
     <div class='layout'>
@@ -53,8 +54,8 @@ export default () => {
                     <textarea class="form-control blue-border" data-testid="commentary" rows="3"></textarea>
                 </div>
                 <div class="col-half">
-                    <label for="file" class="bold-label">Justificatif</label>
-                    <input required type="file" class="form-control blue-border" data-testid="file" />
+                    <label for="file" class="bold-label">Justificatif (.png, .jpg, .jpeg)</label>
+                    <input required type="file" class="form-control blue-border" data-testid="file" accept="image/png, image/jpg, image/jpeg"/>
                 </div>
                 </div>
             </div>
