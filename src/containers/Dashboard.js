@@ -141,7 +141,29 @@ export default class {
 			this.counter++;
 		}
 
-		bills.forEach(bill => {
+		// Bug : unable to open a bill when opening 2 different bills status menus
+		
+		// Cause : duplicate event listener on the bills. When opening a bills status menu, an event
+		//	listener is added on EVERY bill to open/close it. When opening a second bills status menu,
+		//	a second event lsitener is added on the bills from the first tab, whicch causes them to instantly
+		// open AND close at the same time.
+
+		// Fix : When opening a specific bills status tab --> filter only the corresponding bills to add the
+		//	event listener on them (prevent duplicate event listener)
+
+		let filteredIndexBills = [];
+		switch (index) {
+			case 1:
+				filteredIndexBills = bills.filter(bill => bill.status === "pending");
+				break;
+			case 2:
+				filteredIndexBills = bills.filter(bill => bill.status === "accepted");
+				break;
+			case 3:
+				filteredIndexBills = bills.filter(bill => bill.status === "refused");
+				break;
+		}
+		filteredIndexBills.forEach(bill => {
 			$(`#open-bill${bill.id}`).click(e => this.handleEditTicket(e, bill, bills));
 		});
 
