@@ -23,14 +23,16 @@ const rows = data => {
 	// Bug : bills aren't displayed in chronological order
 	// Cause : no sorting is done on the bills
 	// Fix : sort the bills before displaying them
-	data.sort((a,b) => {
-		const dateA = new Date(a.date);
-		const dateB = new Date(b.date);
-
-		if (dateA > dateB) return -1;
-		if (dateA < dateB) return 1;
-		else return 0;
-	});
+	if (data) {
+		data.sort((a,b) => {
+			const dateA = new Date(a.date);
+			const dateB = new Date(b.date);
+	
+			if (dateA > dateB) return -1;
+			if (dateA < dateB) return 1;
+			else return 0;
+		}
+		);}
 
 	return data && data.length 
 		? data.map(bill => row(bill)).join("") 

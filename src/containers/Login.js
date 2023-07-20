@@ -33,6 +33,9 @@ export default class Login {
 			});
 	};
 
+	// Bug : Impossible to login as admin
+	// Cause : typo in the admin input fields selector 
+	// Fix : Correct selector
 	handleSubmitAdmin = e => {
 		e.preventDefault();
 		const user = {
