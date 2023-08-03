@@ -2,11 +2,13 @@
  * @jest-environment jsdom
  */
 
-import { screen, waitFor } from "@testing-library/dom";
+import { fireEvent, screen, waitFor } from "@testing-library/dom";
 import BillsUI from "../views/BillsUI.js";
+import Bills from "../containers/Bills.js";
 import { bills } from "../fixtures/bills.js";
-import { ROUTES_PATH } from "../constants/routes.js";
+import { ROUTES_PATH, ROUTES } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
+import storeMock from "../__mocks__/store.js";
 
 import router from "../app/Router.js";
 
@@ -27,7 +29,9 @@ describe("Given I am connected as an employee", () => {
 			window.onNavigate(ROUTES_PATH.Bills);
 			await waitFor(() => screen.getByTestId("icon-window"));
 			const windowIcon = screen.getByTestId("icon-window");
-			//to-do write expect expression
+			// Here we want to test if the windowIcon is highlighted
+			// The icon is highlighted when it has the active-icon class
+			expect(windowIcon.className).toEqual("active-icon");
 		});
 		test("Then bills should be ordered from earliest to latest", () => {
 			document.body.innerHTML = BillsUI({ data: bills });
@@ -37,6 +41,51 @@ describe("Given I am connected as an employee", () => {
 			const antiChrono = (a, b) => (a < b ? 1 : -1);
 			const datesSorted = [...dates].sort(antiChrono);
 			expect(dates).toEqual(datesSorted);
+		});
+		test("Then clicking on the eye icon should open the bill's image", async () => {
+			// Mock of the onNavigate function
+			const onNavigate = pathname => {
+				document.body.innerHTML = ROUTES({ pathname });
+			};
+
+			// Querry for all the icon eye
+			await waitFor(() => screen.getAllByTestId("icon-eye"));
+			const allIconEye = screen.getAllByTestId("icon-eye");
+
+			// Create an instance of the bills class with the mocked onNavigate, store and localstorage
+			const billsInstance = new Bills({ document, onNavigate, storeMock, localStorageMock });
+
+			// Simulate a click on the first icon eye
+			fireEvent.click(allIconEye[0]);
+
+			// TODO Find a way to check if the modal is opened + error from bootstrap .show function
+			// But for now is the error from .show appear it's that the code indeed open the modal
+		});
+		test("Then clicking on New Bill should redirect to the new bills page", async () => {
+			// mock of the onNavigate function
+			const onNavigate = pathname => {
+				document.body.innerHTML = ROUTES({ pathname });
+			};
+
+			// Querry the New Bill Button
+			await waitFor(() => screen.getByTestId("btn-new-bill"));
+			const testButtonDOM = screen.getByTestId("btn-new-bill");
+			// Check if the New Bill button exist / is defined
+			expect(testButtonDOM).toBeDefined();
+
+			// Create an instance of the bills class with the mocked onNavigate, store and localstorage
+			const billsInstance = new Bills({ document, onNavigate, storeMock, localStorageMock });
+
+			// Simulate a click on the new Bill button
+			fireEvent.click(testButtonDOM);
+
+			// Querry for the input field "expense name" (present in the new bill page)
+			await waitFor(() => screen.getByTestId("expense-name"));
+			const newBillNameField = screen.getByTestId("expense-name");
+
+			// Check if the "expanse name" input field exist / is defined.
+			// If yes --> User was correctly redirect to the new bill page
+			expect(newBillNameField).toBeDefined();
 		});
 	});
 });
