@@ -30,6 +30,7 @@ describe("Given I am connected as an employee", () => {
 			const newBillInstance = new NewBill({ document, onNavigate, storeMock, localStorageMock });
 
 			// TODO Test for file extension
+			// Find a way to test if different file extension are uploaded
 			const fileInput = screen.getByTestId("file");
 			fireEvent.change(fileInput, event);
 		});

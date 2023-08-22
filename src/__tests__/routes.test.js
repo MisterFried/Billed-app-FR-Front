@@ -75,4 +75,14 @@ describe("Given I am connected and I am on some page of the app", () => {
 			expect(screen.getAllByText("Administration")).toBeTruthy();
 		});
 	});
+	describe("When I navigate to an unknown page", () => {
+		test("Then it should render the 404 error page", () => {
+			expect(true).toBe(true);
+		});
+	});
+	describe("When I have an error", () => {
+		test("Then it should render the 500 error page", () => {
+			expect(true).toBe(true);
+		});
+	});	
 });

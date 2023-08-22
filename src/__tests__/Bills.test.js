@@ -48,6 +48,9 @@ describe("Given I am connected as an employee", () => {
 				document.body.innerHTML = ROUTES({ pathname });
 			};
 
+			const showModalMock = jest.fn();
+			$.fn.modal = showModalMock;
+
 			// Querry for all the icon eye
 			await waitFor(() => screen.getAllByTestId("icon-eye"));
 			const allIconEye = screen.getAllByTestId("icon-eye");
@@ -58,8 +61,11 @@ describe("Given I am connected as an employee", () => {
 			// Simulate a click on the first icon eye
 			fireEvent.click(allIconEye[0]);
 
-			// TODO Find a way to check if the modal is opened + error from bootstrap .show function
-			// But for now is the error from .show appear it's that the code indeed open the modal
+			expect(showModalMock).toHaveBeenCalledWith("show");
+
+			// Clean up the modal mock
+			$.fn.modal = undefined;
+
 		});
 		test("Then clicking on New Bill should redirect to the new bills page", async () => {
 			// mock of the onNavigate function
@@ -86,6 +92,20 @@ describe("Given I am connected as an employee", () => {
 			// Check if the "expanse name" input field exist / is defined.
 			// If yes --> User was correctly redirect to the new bill page
 			expect(newBillNameField).toBeDefined();
+		});
+		test("Then it should retrieve the bills correctly", () => {
+			// Mock the onNavigate function
+			const onNavigate = pathname => {
+				document.body.innerHTML = ROUTES({ pathname });
+			};
+
+			// Create an instance of the bills class with the mocked onNavigate, store and localstorage
+			const billsInstance = new Bills({ document, onNavigate, storeMock, localStorageMock });
+
+			// Call the get bills function
+			billsInstance.getBills();
+
+			// Expect
 		});
 	});
 });
