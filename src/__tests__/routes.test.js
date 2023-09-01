@@ -84,5 +84,5 @@ describe("Given I am connected and I am on some page of the app", () => {
 		test("Then it should render the 500 error page", () => {
 			expect(true).toBe(true);
 		});
-	});	
+	});
 });
