@@ -2,13 +2,6 @@
  * @jest-environment jsdom
  */
 
-
-// ! Truc a voir : mentorat
-// ! Pourquoi la fonction formatDate ne fonctionne pas sur les Factures crée (fonctionne sur les 3 initialement existantes)
-// ! Comment tester les erreurs 404 et 500
-// ! Comment simuler un dépôt de fichier de différent format pour test
-// ! Comment tester la méthode getBills
-
 import { fireEvent, screen, waitFor } from "@testing-library/dom";
 import BillsUI from "../views/BillsUI.js";
 import Bills from "../containers/Bills.js";
@@ -17,6 +10,7 @@ import { ROUTES_PATH, ROUTES } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
 import storeMock from "../__mocks__/store.js";
 import router from "../app/Router.js";
+import { formatDate, formatStatus } from "../app/format.js";
 
 describe("Given I am connected as an employee", () => {
 	describe("When I am on Bills Page", () => {
@@ -50,14 +44,41 @@ describe("Given I am connected as an employee", () => {
 			});
 		});
 
-		describe("Bills UI test secction", () => {
-			beforeEach(() => {
+		describe("Bills UI test section", () => {	
+			let billsInstance;
+			let fixtureBills = [...bills]; // save a copy of the fixture bills before they're used to create the bills UI
+			
+			beforeAll(() => {
 				// Create a new UI based on sample bills data (router not used here)
 				document.body.innerHTML = BillsUI({ data: bills });
 
 				// Create an instance of the bills class with the mocked onNavigate, store and localstorage
-				const billsInstance = new Bills({ document, onNavigate, storeMock, localStorageMock });
+				billsInstance = new Bills({ document, onNavigate, storeMock, localStorageMock });
+				billsInstance.store = storeMock; // Manually set the billsInstance mocked store
 			});
+
+			test("Then the bills should be correctly retrieved and their dates / status formatted", async () => {
+				// Get the returned bills (and their date / status) from the getBills function
+				const getBillsResult = await billsInstance.getBills();
+				const getBillsDate = [];
+				const getBillsStatus = [];
+				getBillsResult.forEach(bill => {
+					getBillsDate.push(bill.date);
+					getBillsStatus.push(bill.status);
+				});
+
+				// Manually format the fixture's bills date / status with the formatDate / formatStaus function
+				const fixtureBillsDate = [];
+				const fixtureBillsStatus = [];
+				fixtureBills.forEach(bill => {
+					fixtureBillsDate.push(formatDate(bill.date));
+					fixtureBillsStatus.push(formatStatus(bill.status));
+				});
+
+				// Compare the manually formatted date / status and the date / status formated via the getBills function
+				expect(getBillsDate).toEqual(fixtureBillsDate);
+				expect(getBillsStatus).toEqual(fixtureBillsStatus);
+			});			
 
 			test("Then bills should be ordered from earliest to latest", () => {
 				// Querry all the dates on the screen (one per bill)
@@ -84,7 +105,7 @@ describe("Given I am connected as an employee", () => {
 				await waitFor(() => screen.getAllByTestId("icon-eye"));
 				const allIconEye = screen.getAllByTestId("icon-eye");
 
-				// Simulate a click on theicon eye of the first Bill
+				// Simulate a click on the icon eye of the first Bill
 				fireEvent.click(allIconEye[0]);
 
 				// The bill's image has been opened if the showModal function has been called with "show" parameter
