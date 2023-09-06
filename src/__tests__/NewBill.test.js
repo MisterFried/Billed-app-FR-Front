@@ -20,23 +20,47 @@ describe("Given I am connected as an employee", () => {
 			document.body.innerHTML = ROUTES({ pathname });
 		};
 
-		beforeEach(() => {
+		let newBillsInstance;
+
+		beforeAll(() => {
 			// Create a new UI for the NewBill page
 			document.body.innerHTML = NewBillUI();
 
 			// Create an new instance of the Newbill class with the mocked onNavigate, store and localstorage
-			const newBillInstance = new NewBill({ document, onNavigate, storeMock, localStorageMock });
+			newBillsInstance = new NewBill({ document, onNavigate, storeMock, localStorageMock });
+			newBillsInstance.store = storeMock;
 		});
 
 		test("Then i should only be able to select image", async () => {
-			// TODO Test for file extension : Find a way to test if different file extension are uploaded
+			// Reference for the accepted files
+			const acceptedFilesReference = ["image/png", "image/jpeg", "image/jpg"];
 
-			// Querry the "file" form input
+			// Querry the file input element
 			await waitFor(() => screen.getByTestId("file"));
 			const fileInput = screen.getByTestId("file");
 
-			// Event to trigger a file upload
-			fireEvent.change(fileInput);
+			// Retrieve the accept attribute from the input and split it into an array
+			const acceptedFiles = fileInput.accept.split(",");
+			expect(acceptedFiles.sort()).toEqual(acceptedFilesReference.sort()); // Sorted in case the order is different
+		});
+
+		test("Then it should setup file change correctly", async () => {
+			// Querry the file input
+			await waitFor(() => screen.getByTestId("file"));
+			const fileInput = screen.getByTestId("file");
+			
+			// Simulate a change in the file input
+			fireEvent.change(fileInput, { target: { value: "" } });
+
+			// ! Il y a un problème de délai quelque part :
+			// ! Dans la fonction handleChangeFile, le this.fileUrl a une valeur correct
+			// ! Dans le test, le newBillsInstance.fileUrl est encore a null
+			// ! Lorsque l'on log les deux, le null (fin de test) arrive avant la valeur correct (.then)
+			console.log(`L'URL du fichier à l'issu du test est : ${newBillsInstance.fileUrl}`);
+
+			// Check if the fileUrl has been correctly changed
+			expect(newBillsInstance.fileUrl).not.toBe(null);
+
 		});
 
 		test("Then i should be redirected to the Bills page when submitting a new Bill", async () => {
