@@ -24,11 +24,12 @@ describe("Given I am connected as an employee", () => {
 		};
 
 		describe("Vertical Layout test section", () => {
+			//Create a "root" div and append it to the document's body (used by the router)
+			const root = document.createElement("div");
+			root.id = "root";
+			document.body.append(root);
+
 			test("Then bill icon in vertical layout should be highlighted", async () => {
-				//Create a "root" div and append it to the document's body (used by the router)
-				const root = document.createElement("div");
-				root.id = "root";
-				document.body.append(root);
 
 				// Initialize the router and navigate to the Bills page to get the vertical layout
 				router();
@@ -42,12 +43,62 @@ describe("Given I am connected as an employee", () => {
 				const hasActiveClass = windowIcon.className.includes("active-icon");
 				expect(hasActiveClass).toBeTruthy();
 			});
+
+			test("404", async () => {
+				// Spy on storeMock.bills and mock an "Error 404" return value once
+				jest.spyOn(storeMock, "bills");
+				storeMock.bills.mockImplementationOnce(() => {
+					return { list: () => Promise.reject(new Error("Erreur 404")) };
+				});
+
+				// Navigate to the Bills page
+				router();
+				window.onNavigate(ROUTES_PATH.Bills);
+				await new Promise(process.nextTick);
+
+				// Query to error message
+				const errorMessage = screen.getByTestId("error-message");
+				expect(errorMessage).toBeTruthy();
+
+				// ! On obtient bien un message d'erreur, cependant pas 404
+				// ! "fetch is not defined"
+				console.log(document.body.innerHTML);
+
+				const result = storeMock.bills();
+			});
+
+			test("500", async () => {
+				//Create a "root" div and append it to the document's body (used by the router)
+				const root = document.createElement("div");
+				root.id = "root";
+				document.body.append(root);
+
+				// Spy on storeMock.bills and mock an "Error 404" return value once
+				jest.spyOn(storeMock, "bills");
+				storeMock.bills.mockImplementationOnce(() => {
+					return { list: () => Promise.reject(new Error("Erreur 500")) };
+				});
+
+				// Navigate to the Bills page
+				router();
+				window.onNavigate(ROUTES_PATH.Bills);
+				await new Promise(process.nextTick);
+
+				// Query to error message
+				const errorMessage = screen.getByTestId("error-message");
+				expect(errorMessage).toBeTruthy();
+
+				// ! On obtient bien un message d'erreur, cependant pas 500
+				// ! "fetch is not defined"
+
+				const result = storeMock.bills();
+			});
 		});
 
-		describe("Bills UI test section", () => {	
+		describe("Bills UI test section", () => {
 			let billsInstance;
 			let fixtureBills = [...bills]; // save a copy of the fixture bills before they're used to create the bills UI
-			
+
 			beforeAll(() => {
 				// Create a new UI based on sample bills data (router not used here)
 				document.body.innerHTML = BillsUI({ data: bills });
@@ -78,7 +129,7 @@ describe("Given I am connected as an employee", () => {
 				// Compare the manually formatted date / status and the date / status formated via the getBills function
 				expect(getBillsDate).toEqual(fixtureBillsDate);
 				expect(getBillsStatus).toEqual(fixtureBillsStatus);
-			});			
+			});
 
 			test("Then bills should be ordered from earliest to latest", () => {
 				// Querry all the dates on the screen (one per bill)

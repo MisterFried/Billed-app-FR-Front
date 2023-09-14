@@ -23,6 +23,7 @@ describe("Given I am connected and I am on some page of the app", () => {
 			expect(screen.getAllByText("Administration")).toBeTruthy();
 		});
 	});
+
 	describe("When I navigate to Bills page", () => {
 		test("Then, it should render Bills page", () => {
 			const pathname = ROUTES_PATH["Bills"];
@@ -36,6 +37,7 @@ describe("Given I am connected and I am on some page of the app", () => {
 			expect(screen.getAllByText("Mes notes de frais")).toBeTruthy();
 		});
 	});
+
 	describe("When I navigate to NewBill page", () => {
 		test("Then, it should render NewBill page", () => {
 			const pathname = ROUTES_PATH["NewBill"];
@@ -49,6 +51,7 @@ describe("Given I am connected and I am on some page of the app", () => {
 			expect(screen.getAllByText("Envoyer une note de frais")).toBeTruthy();
 		});
 	});
+
 	describe("When I navigate to Dashboard", () => {
 		test("Then, it should render Dashboard page", () => {
 			const pathname = ROUTES_PATH["Dashboard"];
@@ -62,6 +65,7 @@ describe("Given I am connected and I am on some page of the app", () => {
 			expect(screen.getAllByText("Validations")).toBeTruthy();
 		});
 	});
+
 	describe("When I navigate to anywhere else other than Login, Bills, NewBill, Dashboard", () => {
 		test("Then, it should render Loginpage", () => {
 			const pathname = "/anywhere-else";
@@ -73,16 +77,6 @@ describe("Given I am connected and I am on some page of the app", () => {
 			});
 			document.body.innerHTML = html;
 			expect(screen.getAllByText("Administration")).toBeTruthy();
-		});
-	});
-	describe("When I navigate to an unknown page", () => {
-		test("Then it should render the 404 error page", () => {
-			expect(true).toBe(true);
-		});
-	});
-	describe("When I have an error", () => {
-		test("Then it should render the 500 error page", () => {
-			expect(true).toBe(true);
 		});
 	});
 });
