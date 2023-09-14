@@ -41,7 +41,6 @@ export default class NewBill {
 				console.log(`La nouvelle URL du fichier est : ${this.fileUrl}`);
 			})
 			.catch(error => console.error(error));
-		
 	};
 	
 	handleSubmit = e => {

@@ -45,6 +45,8 @@ describe("Given I am connected as an employee", () => {
 		});
 
 		test("Then it should setup file change correctly", async () => {
+			const spy = jest.spyOn(storeMock, "bills");
+
 			// Querry the file input
 			await waitFor(() => screen.getByTestId("file"));
 			const fileInput = screen.getByTestId("file");
@@ -52,16 +54,22 @@ describe("Given I am connected as an employee", () => {
 			// Simulate a change in the file input
 			fireEvent.change(fileInput, { target: { value: "" } });
 
-			// ! Il y a un problème de délai quelque part :
-			// ! Dans la fonction handleChangeFile, le this.fileUrl a une valeur correct
-			// ! Dans le test, le newBillsInstance.fileUrl est encore a null
-			// ! Lorsque l'on log les deux, le null (fin de test) arrive avant la valeur correct (.then)
-			console.log(`L'URL du fichier à l'issu du test est : ${newBillsInstance.fileUrl}`);
-
-			// Check if the fileUrl has been correctly changed
-			expect(newBillsInstance.fileUrl).not.toBe(null);
-
+			await new Promise(res => setTimeout(() => {
+				console.log(`L'URL du fichier à l'issu du test est : ${newBillsInstance.fileUrl}`);
+				// Check if the fileUrl has been correctly changed
+				expect(newBillsInstance.fileUrl).not.toBe(null);
+				res();
+			}, 100));
 		});
+
+		// test("handlechangefile call", () => {
+		// 	const spy = jest.spyOn(newBillsInstance, "handleChangeFile");
+		// 	const event = new Event("change");
+		// 	newBillsInstance.handleChangeFile(event);
+
+		// 	expect(spy).toHaveBeenCalledTimes();
+
+		// });
 
 		test("Then i should be redirected to the Bills page when submitting a new Bill", async () => {
 			// Querry the submit new bill form input
