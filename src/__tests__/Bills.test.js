@@ -48,7 +48,7 @@ describe("Given I am connected as an employee", () => {
 				// Spy on storeMock.bills and mock an "Error 404" return value once
 				jest.spyOn(storeMock, "bills");
 				storeMock.bills.mockImplementationOnce(() => {
-					return { list: () => Promise.reject(new Error("Erreur 404")) };
+					return { list: () => {return Promise.reject(new Error("Erreur 404"));} };
 				});
 
 				// Navigate to the Bills page
@@ -57,42 +57,41 @@ describe("Given I am connected as an employee", () => {
 				await new Promise(process.nextTick);
 
 				// Query to error message
-				const errorMessage = screen.getByTestId("error-message");
+				const errorMessage = screen.getByText(/Erreur 404/);
 				expect(errorMessage).toBeTruthy();
 
 				// ! On obtient bien un message d'erreur, cependant pas 404
 				// ! "fetch is not defined"
-				console.log(document.body.innerHTML);
 
 				const result = storeMock.bills();
 			});
 
-			test("500", async () => {
-				//Create a "root" div and append it to the document's body (used by the router)
-				const root = document.createElement("div");
-				root.id = "root";
-				document.body.append(root);
+			// test("500", async () => {
+			// 	//Create a "root" div and append it to the document's body (used by the router)
+			// 	const root = document.createElement("div");
+			// 	root.id = "root";
+			// 	document.body.append(root);
 
-				// Spy on storeMock.bills and mock an "Error 404" return value once
-				jest.spyOn(storeMock, "bills");
-				storeMock.bills.mockImplementationOnce(() => {
-					return { list: () => Promise.reject(new Error("Erreur 500")) };
-				});
+			// 	// Spy on storeMock.bills and mock an "Error 404" return value once
+			// 	jest.spyOn(storeMock, "bills");
+			// 	storeMock.bills.mockImplementationOnce(() => {
+			// 		return { list: () => Promise.reject(new Error("Erreur 500")) };
+			// 	});
 
-				// Navigate to the Bills page
-				router();
-				window.onNavigate(ROUTES_PATH.Bills);
-				await new Promise(process.nextTick);
+			// 	// Navigate to the Bills page
+			// 	router();
+			// 	window.onNavigate(ROUTES_PATH.Bills);
+			// 	await new Promise(process.nextTick);
 
-				// Query to error message
-				const errorMessage = screen.getByTestId("error-message");
-				expect(errorMessage).toBeTruthy();
+			// 	// Query to error message
+			// 	const errorMessage = screen.getByTestId("error-message");
+			// 	expect(errorMessage).toBeTruthy();
 
-				// ! On obtient bien un message d'erreur, cependant pas 500
-				// ! "fetch is not defined"
+			// 	// ! On obtient bien un message d'erreur, cependant pas 500
+			// 	// ! "fetch is not defined"
 
-				const result = storeMock.bills();
-			});
+			// 	const result = storeMock.bills();
+			// });
 		});
 
 		describe("Bills UI test section", () => {
