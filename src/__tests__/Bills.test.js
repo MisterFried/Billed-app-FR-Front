@@ -8,9 +8,11 @@ import Bills from "../containers/Bills.js";
 import { bills } from "../fixtures/bills.js";
 import { ROUTES_PATH, ROUTES } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
-import storeMock from "../__mocks__/store.js";
+import mockStore from "../__mocks__/store.js";
 import router from "../app/Router.js";
 import { formatDate, formatStatus } from "../app/format.js";
+
+jest.mock("../app/store", () => mockStore);
 
 describe("Given I am connected as an employee", () => {
 	describe("When I am on Bills Page", () => {
@@ -23,14 +25,13 @@ describe("Given I am connected as an employee", () => {
 			document.body.innerHTML = ROUTES({ pathname });
 		};
 
-		describe("Vertical Layout test section", () => {
+		describe("Vertical Layout  and 404 / 500 errors test section", () => {
 			//Create a "root" div and append it to the document's body (used by the router)
 			const root = document.createElement("div");
 			root.id = "root";
 			document.body.append(root);
 
 			test("Then bill icon in vertical layout should be highlighted", async () => {
-
 				// Initialize the router and navigate to the Bills page to get the vertical layout
 				router();
 				window.onNavigate(ROUTES_PATH.Bills);
@@ -44,11 +45,28 @@ describe("Given I am connected as an employee", () => {
 				expect(hasActiveClass).toBeTruthy();
 			});
 
-			test("404", async () => {
-				// Spy on storeMock.bills and mock an "Error 404" return value once
-				jest.spyOn(storeMock, "bills");
-				storeMock.bills.mockImplementationOnce(() => {
-					return { list: () => {return Promise.reject(new Error("Erreur 404"));} };
+			test("Then if there is a 404 error, the appropriate message should be displayed", async () => {
+				// Spy on mockStore.bills and mock an "Error 404" return value once
+				jest.spyOn(mockStore, "bills");
+				mockStore.bills.mockImplementationOnce(() => {
+					return { list: () => Promise.reject(new Error("Erreur 404")) };
+				});
+
+				// Navigate to the Bills page
+				router();
+				window.onNavigate(ROUTES_PATH.Bills);
+				await new Promise(process.nextTick);
+
+				// Query the 404 error message
+				const errorMessage = screen.getByText(/Erreur 404/);
+				expect(errorMessage).toBeTruthy();
+			});
+
+			test("Then if there is a 500 error, the appropriate message should be displayed", async () => {
+				// Spy on mockStore.bills and mock an "Error 500" return value once
+				jest.spyOn(mockStore, "bills");
+				mockStore.bills.mockImplementationOnce(() => {
+					return { list: () => Promise.reject(new Error("Erreur 500")) };
 				});
 
 				// Navigate to the Bills page
@@ -57,41 +75,9 @@ describe("Given I am connected as an employee", () => {
 				await new Promise(process.nextTick);
 
 				// Query to error message
-				const errorMessage = screen.getByText(/Erreur 404/);
+				const errorMessage = screen.getByText(/Erreur 500/);
 				expect(errorMessage).toBeTruthy();
-
-				// ! On obtient bien un message d'erreur, cependant pas 404
-				// ! "fetch is not defined"
-
-				const result = storeMock.bills();
 			});
-
-			// test("500", async () => {
-			// 	//Create a "root" div and append it to the document's body (used by the router)
-			// 	const root = document.createElement("div");
-			// 	root.id = "root";
-			// 	document.body.append(root);
-
-			// 	// Spy on storeMock.bills and mock an "Error 404" return value once
-			// 	jest.spyOn(storeMock, "bills");
-			// 	storeMock.bills.mockImplementationOnce(() => {
-			// 		return { list: () => Promise.reject(new Error("Erreur 500")) };
-			// 	});
-
-			// 	// Navigate to the Bills page
-			// 	router();
-			// 	window.onNavigate(ROUTES_PATH.Bills);
-			// 	await new Promise(process.nextTick);
-
-			// 	// Query to error message
-			// 	const errorMessage = screen.getByTestId("error-message");
-			// 	expect(errorMessage).toBeTruthy();
-
-			// 	// ! On obtient bien un message d'erreur, cependant pas 500
-			// 	// ! "fetch is not defined"
-
-			// 	const result = storeMock.bills();
-			// });
 		});
 
 		describe("Bills UI test section", () => {
@@ -103,8 +89,8 @@ describe("Given I am connected as an employee", () => {
 				document.body.innerHTML = BillsUI({ data: bills });
 
 				// Create an instance of the bills class with the mocked onNavigate, store and localstorage
-				billsInstance = new Bills({ document, onNavigate, storeMock, localStorageMock });
-				billsInstance.store = storeMock; // Manually set the billsInstance mocked store
+				billsInstance = new Bills({ document, onNavigate, mockStore, localStorageMock });
+				billsInstance.store = mockStore; // Manually set the billsInstance mocked store
 			});
 
 			test("Then the bills should be correctly retrieved and their dates / status formatted", async () => {
@@ -130,7 +116,7 @@ describe("Given I am connected as an employee", () => {
 				expect(getBillsStatus).toEqual(fixtureBillsStatus);
 			});
 
-			test("Then bills should be ordered from earliest to latest", () => {
+			test("Then the bills should be ordered from earliest to latest", () => {
 				// Querry all the dates on the screen (one per bill)
 				const dates = screen
 					.getAllByText(/^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$/i)
@@ -160,18 +146,15 @@ describe("Given I am connected as an employee", () => {
 
 				// The bill's image has been opened if the showModal function has been called with "show" parameter
 				expect(showModalMock).toHaveBeenCalledWith("show");
-
-				// Clean up the modal mock
-				$.fn.modal = undefined;
 			});
 
 			test("Then clicking on New Bill should redirect to the new bills page", async () => {
 				// Querry the New Bill Button
 				await waitFor(() => screen.getByTestId("btn-new-bill"));
-				const testButtonDOM = screen.getByTestId("btn-new-bill");
+				const newBillButton = screen.getByTestId("btn-new-bill");
 
 				// Simulate a click on the new Bill button
-				fireEvent.click(testButtonDOM);
+				fireEvent.click(newBillButton);
 
 				// Querry for the input field "expense name" (present in the new bill page)
 				await waitFor(() => screen.getByTestId("expense-name"));
