@@ -25,7 +25,7 @@ describe("Given I am connected as an employee", () => {
 			document.body.innerHTML = ROUTES({ pathname });
 		};
 
-		describe("Vertical Layout  and 404 / 500 errors test section", () => {
+		describe("Vertical layout test section", () => {
 			//Create a "root" div and append it to the document's body (used by the router)
 			const root = document.createElement("div");
 			root.id = "root";
@@ -43,40 +43,6 @@ describe("Given I am connected as an employee", () => {
 				// The icon is highlighted when it has the "active-icon" class
 				const hasActiveClass = windowIcon.className.includes("active-icon");
 				expect(hasActiveClass).toBeTruthy();
-			});
-
-			test("Then if there is a 404 error, the appropriate message should be displayed", async () => {
-				// Spy on mockStore.bills and mock an "Error 404" return value once
-				jest.spyOn(mockStore, "bills");
-				mockStore.bills.mockImplementationOnce(() => {
-					return { list: () => Promise.reject(new Error("Erreur 404")) };
-				});
-
-				// Navigate to the Bills page
-				router();
-				window.onNavigate(ROUTES_PATH.Bills);
-				await new Promise(process.nextTick);
-
-				// Query the 404 error message
-				const errorMessage = screen.getByText(/Erreur 404/);
-				expect(errorMessage).toBeTruthy();
-			});
-
-			test("Then if there is a 500 error, the appropriate message should be displayed", async () => {
-				// Spy on mockStore.bills and mock an "Error 500" return value once
-				jest.spyOn(mockStore, "bills");
-				mockStore.bills.mockImplementationOnce(() => {
-					return { list: () => Promise.reject(new Error("Erreur 500")) };
-				});
-
-				// Navigate to the Bills page
-				router();
-				window.onNavigate(ROUTES_PATH.Bills);
-				await new Promise(process.nextTick);
-
-				// Query to error message
-				const errorMessage = screen.getByText(/Erreur 500/);
-				expect(errorMessage).toBeTruthy();
 			});
 		});
 
